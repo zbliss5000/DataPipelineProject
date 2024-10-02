@@ -1,5 +1,6 @@
 import os
 
+# This function sets up the configuration for the script, specifying where the CSV files are stored and what file extension the script should look for.
 def get_config():
     """Get the configuration settings.
 
@@ -8,7 +9,7 @@ def get_config():
     dict
         Configuration dictionary.
     """
-    # Join the current directory (s3 upload) to the subfolder (csv_files)
+    # Find the absolute path of the directory where the script is located, and joins the current directory (s3 upload) to the subfolder (csv_files)
     current_dir = os.path.dirname(os.path.abspath(__file__))
     csv_dir = os.path.join(current_dir, 'csv_files')
     
@@ -19,7 +20,7 @@ def get_config():
     }
     
     return config
-    
+   
 def check_directory_exists(dir):
     """Check if a directory exists.
 
@@ -103,7 +104,7 @@ def prep_csv(files, config):
     list of dict
         A list of dictionaries containing local file paths and updated filenames.
     """
-    # After we have validated the file type, we will join the csv_directory to the file name, then replace underscores with backslashes.
+    # After we have validated the file type, we will join the csv_directory to the file name, then replace underscores with backslashes for upload to S3 later on.
     valid_files = list()
     for file in files:
         if validate_file_type(file, config['expected_file_extension']):
@@ -128,6 +129,7 @@ def id_and_prep_csvs(config):
     list of dict
         A list of dictionaries containing local file paths and updated filenames.
     """
+    # If the files are found, its prints the message and calls prep_csv to prepare the files. If not, prints an error message.
     try:
         files = list_files(config['csv_dir'])
         if files:
@@ -140,11 +142,11 @@ def id_and_prep_csvs(config):
         print("Error accessing the directory.")
         
         
-            
+# Calls get_config to retrieve the configuration settings, and prints the config settings.            
 if __name__ == "__main__":
     config = get_config()
     print(config)
-
+# If directory exists, identify and prepare files.
     if check_directory_exists(config['csv_dir']):
         csv_info_list = id_and_prep_csvs(config)
         for csv_info in csv_info_list:
