@@ -13,12 +13,15 @@ def lambda_handler(event, context):
     s3 = boto3.client('s3')
     
     # Define the name of the processed and error buckets in S3 where you want to copy CSV data into.
-    error_bucket = 'ERROR_BUCKET'
-    processed_bucket = 'PROCESSED_BUCKET'
-    
+    error_bucket = os.environ['ERROR_BUCKET']
+    processed_bucket = os.environ['PROCESSED_BUCKET']
+    # error_bucket = 'propertiesstack-errorbucket0072fc7f-zzzinbxwvhst'
+    # processed_bucket = 'propertiesstack-processedbucket16e36869-xf1shlubzubb'
+
     # Extract the 'bucket name' and the 'CSV filename' from the 'event' input and print the CSV filename
     raw_bucket = event['Records'][0]['s3']['bucket']['name']
     csv_filename = event['Records'][0]['s3']['object']['key']
+    error_filename = f'error_{csv_filename}'
 
     # Download the CSV file from S3, read the content, decode from bytes to string,
     obj = s3.get_object(Bucket=raw_bucket, Key=csv_filename)
@@ -56,8 +59,12 @@ def lambda_handler(event, context):
      # If the 'processed_rows' and 'error_rows' lists are populated pass them to the 'upload_to_bucket' function.
     if processed_rows:
         print(f"\nProcessed data present. Data will be uploaded to '{processed_bucket}' at '{csv_filename}'.\n")
+        response = upload_to_bucket(s3, processed_bucket, processed_rows, csv_filename)
+        print(f"{response}\n")
     if error_rows:
-        print(f"\nError data present. Data will be uploaded to '{error_bucket}' at '{csv_filename}'.\n")
+        print(f"\nError data present. Data will be uploaded to '{error_bucket}' at '{error_filename}'.\n")
+        response = upload_to_bucket(s3, error_bucket, error_rows, error_filename)
+        print(f"{response}\n")
 
 
     return {
